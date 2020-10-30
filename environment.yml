@@ -2,6 +2,7 @@ name: boxmod-dev
 dependencies:
   - python=3.8
   - ipython
+  - pip
   #
   # core
   - numpy
@@ -11,6 +12,8 @@ dependencies:
   #
   # io
   - pyyaml
+  - pip:
+    - parse
   #
   # viz
   - graphviz
