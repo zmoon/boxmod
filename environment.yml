@@ -1,0 +1,20 @@
+name: boxmod-dev
+dependencies:
+  - python=3.8
+  - ipython
+  #
+  # core
+  - numpy
+  - scipy
+  - matplotlib
+  - pandas
+  #
+  # io
+  - pyyaml
+  #
+  # viz
+  - graphviz
+  - python-graphviz
+  #
+  # dev
+  - pylint
