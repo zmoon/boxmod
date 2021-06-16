@@ -2,6 +2,9 @@
 
 *Simple chemical box model and mechanism analysis tools*
 
+![Species' connections in a simple mechanism visualized using Graphviz](https://user-images.githubusercontent.com/15079414/122259946-b4e61980-cea0-11eb-8672-72c99f372b8f.png)
+
+
 ## Notes
 
 * `boxmod` was initially developed during the [2020 HU PBL Workshop](https://dnwsite.weebly.com/pbl-workshop-2020.html)
