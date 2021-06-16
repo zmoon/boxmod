@@ -2,13 +2,10 @@
 Run a mechanism.
 """
 # import warnings
-from copy import deepcopy as copy
-
+# from copy import deepcopy as copy
 import numpy as np
 import pandas as pd
 from scipy import integrate
-
-from .eqns import EqnSet
 
 __all__ = (
     "run_exp",
@@ -34,8 +31,6 @@ def ppbv_to_molec_cm3(x, p=1000, T=298):
     T : float
         units: K
     """
-    from scipy.constants import k as k_B
-
     n_a_cm3 = n_a_m3(p, T) / 1e6  # m^-3 -> cm^-3
 
     return x * 1e-9 * n_a_cm3
@@ -49,8 +44,6 @@ def molec_cm3_to_ppbv(x, p=1000, T=298):
     T : float
         units: K
     """
-    from scipy.constants import k as k_B
-
     n_a_cm3 = n_a_m3(p, T) / 1e6  # m^-3 -> cm^-3
 
     return x / n_a_cm3 * 1e9
@@ -139,7 +132,7 @@ def run_exp(
     # The first two args must be `t, y`
     # currently dcdt doesn't use t directly, just c(t)
     # squeeze to go from col vector to true 1-d
-    f = lambda t, y: mech.dcdt_fn(y, fixed=fixed, sources=sources).squeeze()
+    f = lambda t, y: mech.dcdt_fn(y, fixed=fixed, sources=sources).squeeze()  # noqa: E731
 
     # Run
     ret = integrate.solve_ivp(f, t_span, c0, t_eval=t, method=method)

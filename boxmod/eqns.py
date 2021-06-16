@@ -1,16 +1,11 @@
 """
 Mechanism object (`EqnSet`) and analysis tools.
 """
-import re
 import subprocess
-import tempfile
-import warnings
 from collections import defaultdict
 from collections import namedtuple
-from collections import OrderedDict
 
 import numpy as np
-import yaml
 
 __all__ = (
     "EqnElement",
@@ -224,9 +219,9 @@ class EqnSet:
         all_spc_raw = [spc for e in eqns for spc in e._all_spc]
 
         spc_unique_case = set(all_spc_raw)
-        spc_unique_no_case = set(spc.upper() for spc in all_spc_raw)
+        # spc_unique_no_case = set(spc.upper() for spc in all_spc_raw)
         # TODO: check for possible case mistakes in species
-        likely_dupes = spc_unique_case - spc_unique_case
+        # likely_dupes = spc_unique_case - spc_unique_case
 
         return sorted(spc_unique_case)
 
@@ -662,6 +657,8 @@ class EqnSet:
     def _plot_graph_graphviz(self, cons, *, strict=False, title="", which=""):
         from graphviz import Graph
 
+        # import tempfile
+
         # can also set global node_attr and edge_attr here
         dot = Graph(
             comment="Species connections",
@@ -703,7 +700,7 @@ class EqnSet:
         for fmt in formats:
             try:
                 dot.render(fn, quiet=True, format=fmt)
-            except subprocess.CalledProcessError as e:
+            except subprocess.CalledProcessError:  # as e:
                 # warnings.warn(str(e))
                 pass
         # ^ raises CalledProcessError saying it can't find `dot.bat`,
