@@ -660,7 +660,7 @@ class EqnSet:
         # import tempfile
 
         # can also set global node_attr and edge_attr here
-        dot = Graph(
+        g = Graph(
             comment="Species connections",
             node_attr={
                 "fillcolor": "blue",
@@ -682,14 +682,14 @@ class EqnSet:
 
         # add nodes
         for spc in self.spcs:
-            dot.node(spc)
+            g.node(spc)
 
         # add edges
         for spc in self.spcs:
             # we can add all at once like this, but didn't seem to allow specifying label
             # dot.edges([(spc, con.spc) for con in cons[spc]])
             for con in cons[spc]:
-                dot.edge(spc, con.spc, label=con.rxn_name)  # , _attributes=edge_attrs)
+                g.edge(spc, con.spc, label=con.rxn_name)  # , _attributes=edge_attrs)
 
         # render
         # fp = tempfile.TemporaryFile(suffix=".gv", delete=False)
@@ -699,14 +699,39 @@ class EqnSet:
         formats = ["pdf", "png", "svg"]
         for fmt in formats:
             try:
-                dot.render(fn, quiet=True, format=fmt)
+                g.render(fn, quiet=True, format=fmt)
             except subprocess.CalledProcessError:  # as e:
                 # warnings.warn(str(e))
                 pass
         # ^ raises CalledProcessError saying it can't find `dot.bat`,
         # but in fact it is there in Path (and still works). Maybe a cmd/PowerShell issue
 
-    def _plot_graph_networkx(self, cons):
-        raise NotImplementedError
-        # import networkx as nx
-        # G = nx.Graph()
+    def _plot_graph_networkx(self, cons, *, which="", **kwargs):
+        import networkx as nx
+
+        if which.startswith("co-"):
+            g = nx.MultiGraph()
+        else:
+            g = nx.MultiDiGraph()
+
+        # Add nodes
+        for spc in self.spcs:
+            g.add_node(spc)
+
+        # Add edges
+        for spc in self.spcs:
+            for con in cons[spc]:
+                g.add_edge(spc, con.spc, label=con.rxn_name)
+
+        # pos = nx.spring_layout(g)
+        pos = nx.kamada_kawai_layout(g)
+        nx.draw_networkx(
+            g,
+            pos,
+            with_labels=True,
+            # connectionstyle='arc3,rad=0.2',
+            edge_color="0.6",
+            node_size=350,  # 300 default
+        )
+        labels = {(n1, n2): c for n1, n2, c in g.edges.data("label", default="?")}
+        nx.draw_networkx_edge_labels(g, pos, labels, font_color="r")
