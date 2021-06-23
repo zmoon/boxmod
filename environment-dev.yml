@@ -18,3 +18,4 @@ dependencies:
   # viz
   - graphviz
   - python-graphviz
+  - networkx
