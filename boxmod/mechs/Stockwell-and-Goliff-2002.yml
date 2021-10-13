@@ -15,6 +15,10 @@
 #
 # if k is given as a constant, k0 is not needed (will be the same)
 
+# TODO: maybe load these from here
+name: "stockwell"  # short name
+long_name: "Stockwell and Goliff (2002)"
+
 # TODO: include the original J expressions from the paper as well
 
 # TODO: probably don't need the RX keys, could use an additional attribute or comment
