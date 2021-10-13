@@ -1,0 +1,128 @@
+# Mechanism -- Table 2 from Stockwell & Goliff (2002)
+# doi:10.1029/2001JD900237
+#
+# units of k's are s^-1 or cm^3 molec^-1 s^-1
+#
+# k0 is a value of the rate coeff for:
+# * 298 K, 1 atm, local solar noon at 40 deg. lat
+#
+# rate expressions are specified in loose latex-style format (like input to Wolfram Alpha):
+# * space-separated adjacency (without other symbol) indicates multiplication
+# * exponentiation with `^`
+# * e^{ } with `exp()` is allowed
+#
+# hydroxyl radical is `HO` in the equations
+#
+# if k is given as a constant, k0 is not needed (will be the same)
+
+# TODO: include the original J expressions from the paper as well
+
+# TODO: probably don't need the RX keys, could use an additional attribute or comment
+
+reactions:
+  # 1
+  - eqn: NO2 -> O3P + NO
+    k: j_no2
+    k0: 9.35e-3
+
+  # 2
+  - eqn: O3 -> O1D + O2
+    k: j_o3  # j_o3_o1d
+    k0: 5.33e-5
+
+  # 3
+  - eqn: HCHO -> 2 HO2 + CO
+    k: j_hcho_r  # j_hcho_h
+    k0: 3.55e-5
+
+  # 4
+  - eqn: HCHO -> H2 + CO
+    k: j_hcho_m  # j_hcho_h2
+    k0: 4.91e-5
+
+  # 5
+  - eqn: O3P + O2 -> O3
+    k: '[M] 5.63e-34 (T/300)^-2.8'
+    kpy: 'M * 5.63e-34 * (T/300)**-2.8'
+    k0: 4.91e-5
+
+  # 6
+  - eqn: O1D + N2 -> O3P + N2
+    k: 1.8e-11 exp(108/T)
+    kpy: 1.8e-11 * math.exp(108/T)
+    k0: 2.58e-11
+
+  # 7
+  # not sure we would need this and #6 separately...
+  # these are the +M -> M* reactions
+  - eqn: O1D + O2 -> O3P + O2
+    k: 3.2e-11 exp(67/T)
+    kpy: 3.2e-11 * math.exp(67/T)
+    k0: 4.01e-11
+
+  # 8
+  - eqn: O1D + H2O -> 2 HO
+    k: 2.2e-11
+
+  # 9
+  - eqn: HO2 + NO -> NO2 + HO
+    k: 3.1e-12 exp(270/T)
+    kpy: 3.1e-12 * math.exp(270/T)
+    k0: 7.67e-12
+
+  # 10
+  - eqn: O3 + NO -> NO2 + O2
+    k: 1.8e-12 exp(-1370/T)
+    kpy: 1.8e-12 * math.exp(-1370/T)
+    k0: 1.82e-14
+
+  # 11
+  - eqn: RO2 + NO -> NO2 + HO2 + HCHO  # + ...?
+    k: 4.0e-12
+
+  # 12
+  - eqn: CO + HO -> HO2 + CO2
+    k: 1.3e-13 (1 + 2.439e-20 [M] 300/T)  # TODO: check! not clear where paren should end
+    kpy: 1.3e-13 * (1 + 2.439e-20 * M * 300/T)
+    k0: 2.09e-13
+
+  # 13
+  - eqn: HO + HC -> RO2 + H2O  # HC, hydrocarbon, aka R? (the source of RO2)
+    k: 5.26e-12 exp(-260/T)
+    kpy: 5.26e-12 * math.exp(-260/T)
+    k0: 2.20e-12
+
+  # 14
+  - eqn: HO + HCHO -> HO2 + CO + H2O
+    k: 8.6e-12 exp(20/T)
+    kpy: 8.6e-12 * math.exp(20/T)
+    k0: 9.20e-12
+
+  # 15
+  - eqn: HO + NO2 -> HNO3
+    k: k_hno3  # multistep expression
+    k0: 8.62e-12
+
+  # 16
+  - eqn: 2 HO2 -> H2O2 + O2
+    k: 2.2e-13 exp(600/T) + 1.85e-33 [M] exp(980/T)
+    kpy: 2.2e-13 * math.exp(600/T) + 1.85e-33 * M * math.exp(980/T)
+    k0: 2.86e-12
+
+  # 17
+  - eqn: 2 HO2 + H2O -> H2O2 + H2O + O2
+    k: 3.08e-34 exp(2800/T) + 2.59e-54 [M] exp(3180/T)
+    kpy: 3.08e-34 * math.exp(2800/T) + 2.59e-54 * M * math.exp(3180/T)
+    k0: 6.42e-30  # so small! but maybe if very moist...
+
+  # 18
+  - eqn: HO2 + RO2 -> ROOH + O2
+    k: 1.66e-13 exp(1300/T)
+    kpy: 1.66e-13 * math.exp(1300/T)
+    k0: 1.30e-11
+
+  # 19
+  - eqn: 2 RO2 -> ROOR + O2  # originally was -> Prod
+    k: 1.6e-12 exp(2200/T)
+    kpy: 1.6e-12 * math.exp(2200/T)
+    k0: 2.56e-9
