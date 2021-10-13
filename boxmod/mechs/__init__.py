@@ -25,7 +25,7 @@ def load_mech(name: str):
     from ..eqns import EqnSet
 
     if name in _YML_MECHS:
-        eqns = load.read_yaml(THIS_DIR / _YML_MECHS[name])
+        mech_data = load.read_yaml(THIS_DIR / _YML_MECHS[name])
 
     else:
         raise ValueError(
@@ -33,4 +33,4 @@ def load_mech(name: str):
             f"Valid options are: {', '.join(f'{n!r}' for n in _ALL_MECH_NAMES)}"
         )
 
-    return EqnSet(eqns, long_name=name)
+    return EqnSet(**mech_data._asdict())

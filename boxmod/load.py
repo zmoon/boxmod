@@ -4,6 +4,9 @@ The ``read_*`` functions return lists of `Eqn` objects,
 which can then be used to create `EqnSet`s.
 """
 import warnings
+from typing import List
+from typing import NamedTuple
+from typing import Optional
 
 import numpy as np
 
@@ -13,6 +16,15 @@ __all__ = ("read_csvs", "read_yaml", "read_yaml_permm")
 
 
 # TODO: Eqn.from_string static method, where separator (or separator pattern) could be passed
+
+
+class _MechData(NamedTuple):
+    """Data needed to init an `EqnSet`."""
+
+    equations: List[Eqn]
+    name: Optional[str] = None
+    long_name: Optional[str] = None
+    species: Optional[List[str]] = None
 
 
 def parse_eqn_side(s):
@@ -125,17 +137,13 @@ def read_csvs(fp_list):
     return eqns
 
 
-def read_yaml(fp):
-    """Create an `EqnSet` from my YAML format.
+def read_yaml(fp) -> _MechData:
+    """Load a mech in my YAML format with equation and rate exprs separate.
 
     Parameters
     ----------
     fp
         Path-like to the YAML file.
-
-    Returns
-    -------
-    list(Eqn)
     """
     import yaml
 
@@ -169,11 +177,14 @@ def read_yaml(fp):
 
         eqns.append(eqn)
 
-    return eqns
+    name = data.get("name")
+    long_name = data.get("long_name")
+
+    return _MechData(equations=eqns, name=name, long_name=long_name)
 
 
 def read_yaml_permm(fp):
-    """Read a permm mechanism.
+    """Read a permm mechanism (no rate constants but some additional info).
 
     Parameters
     ----------
