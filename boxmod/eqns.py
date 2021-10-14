@@ -65,7 +65,7 @@ LATEX_SPC_MAP = {
 class Eqn:
     """A full set of equation elements."""
 
-    def __init__(self, reactants, products, k, *, str_orig=None, name=None):
+    def __init__(self, reactants, products, k, *, str_orig=None, name=None, k_fn=None):
         """
         reactants : list of (mult, spc) tuples
             to initialize `EqnElement`s
@@ -77,10 +77,12 @@ class Eqn:
 
         Optional
         --------
-        str_orig : str
+        str_orig : str, optional
             original string that this equation was parsed from (for later reference)
-        name : str
+        name : str, optional
             ID for the equation, e.g., "R22"
+        k_fn : Callable, optional
+            Function to compute k based on T, M, etc.
         """
         self.rct = [EqnElement(mult, spc) for (mult, spc) in reactants]
         self.pdt = [EqnElement(mult, spc) for (mult, spc) in products]
@@ -88,6 +90,7 @@ class Eqn:
         #
         self.str_orig = str_orig
         self.name = name
+        self.k_fn = k_fn
 
         # TODO: check if species are repeated, change to mult form. with warning?
         # TODO: optional canceling of species (if on both sides)?

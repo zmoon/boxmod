@@ -146,7 +146,7 @@ def _gen_simple_exp_photol_fns():
         "o3_o1d": 3.83e-5,
         "no2": 1.67e-2,
         "hcho_h": 3.55e-5,  # HCHO -> 2 HO2 + CO
-        "hcho_h2": 4.91e-5,  # TODO: fix
+        "hcho_h2": 4.91e-5,  # TODO: fix with correct value
         "mrooh": 3.01e-5,
     }
 
@@ -171,6 +171,8 @@ _EXP_PHOTOL_FNS = _gen_simple_exp_photol_fns()
 
 
 def _gen_k_fn_yml(s: str):
+    import math  # noqa: F401
+
     # Replace certain things so valid Python
     rpls = {
         "[M]": "M",
@@ -190,16 +192,19 @@ def f({', '.join(args)}):
     return {s_f_body}
     """.strip()
 
-    exec(s_f)
+    exec(s_f, locals())
 
     return locals()["f"]
 
 
 def _gen_k_fn_yml_multiline(s: str):
+    import math  # noqa: F401
+
     rpls = {
         "[M]": "M",
         "^": "**",
         "exp": "math.exp",
+        "log10": "math.log10",
     }
     s_ = s
     for s1, s2 in rpls.items():
@@ -222,7 +227,18 @@ def f({', '.join(args)}):
 {s_f_body}
     """.strip()
 
-    exec(s_f)
+    exec(s_f, locals())
+
+    return locals()["f"]
+
+
+def _gen_k_fn_float(x: float):
+    s_f = f"""
+def f():
+    return {x}
+    """.strip()
+
+    exec(s_f, locals())
 
     return locals()["f"]
 
@@ -260,9 +276,7 @@ def read_yaml(fp) -> _MechData:
 
         # Single number
         if isinstance(k_expr0, float):
-
-            def f():
-                return k_expr0
+            f = _gen_k_fn_float(k_expr0)
 
         # Reference to photol reaction
         elif k_expr0.startswith("j_"):
@@ -277,7 +291,7 @@ def read_yaml(fp) -> _MechData:
             f = _gen_k_fn_yml(k_expr0)
 
         # Form equation
-        eqn = Eqn(ms_rcts, ms_pdts, k0)
+        eqn = Eqn(ms_rcts, ms_pdts, k0, k_fn=f)
 
         eqns.append(eqn)
 
