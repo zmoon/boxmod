@@ -137,6 +137,96 @@ def read_csvs(fp_list):
     return eqns
 
 
+# Construct exp photolysis fns
+def _gen_simple_exp_photol_fns():
+    """a exp(-0.575/cos(SZA))"""
+    import math  # noqa: F401
+
+    data = {
+        "o3_o1d": 3.83e-5,
+        "no2": 1.67e-2,
+        "hcho_h": 3.55e-5,  # HCHO -> 2 HO2 + CO
+        "hcho_h2": 4.91e-5,  # TODO: fix
+        "mrooh": 3.01e-5,
+    }
+
+    fns = {}
+    for id_, a in data.items():
+        s_f = f"""
+def f(SZA):
+    if SZA > math.pi / 2:  # > 90 deg.
+        return 0
+    else:
+        return {a} * math.exp(-0.575 / math.cos(SZA))
+        """.strip()
+
+        exec(s_f, locals())
+
+        fns[id_] = locals()["f"]
+
+    return fns
+
+
+_EXP_PHOTOL_FNS = _gen_simple_exp_photol_fns()
+
+
+def _gen_k_fn_yml(s: str):
+    # Replace certain things so valid Python
+    rpls = {
+        "[M]": "M",
+        "^": "**",
+        "exp": "math.exp",
+    }
+    s_f_body = s
+    for s1, s2 in rpls.items():
+        s_f_body = s_f_body.replace(s1, s2)
+
+    # Get args
+    args0 = ["T", "M"]  # desired order
+    args = [arg for arg in args0 if arg in s_f_body]
+
+    s_f = f"""
+def f({', '.join(args)}):
+    return {s_f_body}
+    """.strip()
+
+    exec(s_f)
+
+    return locals()["f"]
+
+
+def _gen_k_fn_yml_multiline(s: str):
+    rpls = {
+        "[M]": "M",
+        "^": "**",
+        "exp": "math.exp",
+    }
+    s_ = s
+    for s1, s2 in rpls.items():
+        s_ = s_.replace(s1, s2)
+
+    lines = s_.splitlines()
+
+    assert lines[-1].startswith("k = ")
+    ret = lines[-1].partition(" = ")[-1]
+
+    s_f_body = "\n".join(lines[:-1]) + f"\nreturn {ret}"
+    s_f_body = "\n".join(f"    {line}" for line in s_f_body.splitlines())  # indent
+
+    # Get args
+    args0 = ["T", "M"]  # desired order
+    args = [arg for arg in args0 if arg in s_f_body]
+
+    s_f = f"""
+def f({', '.join(args)}):
+{s_f_body}
+    """.strip()
+
+    exec(s_f)
+
+    return locals()["f"]
+
+
 def read_yaml(fp) -> _MechData:
     """Load a mech in my YAML format with equation and rate exprs separate.
 
@@ -155,25 +245,39 @@ def read_yaml(fp) -> _MechData:
 
         lhs, rhs = d["eqn"].split("->")
 
-        # reactants
+        # Reactants
         ms_rcts = parse_eqn_side(lhs)  # reactant (mult, spc)
 
-        # producst
+        # Products
         ms_pdts = parse_eqn_side(rhs)  # product (mult, spc)
 
-        # k -- just the float one for now
-        k = d.get("k0", d["k"])
-        assert isinstance(k, float)
+        # Rate coeff
+        k0 = d.get("k0", d["k"])
+        assert isinstance(k0, float)
 
-        # form equation
-        eqn = Eqn(ms_rcts, ms_pdts, k)
+        # Rate expr
+        k_expr0 = d["k"]
 
-        # testing the Eqn print methods
-        # print(eqn)
-        # print(f"{eqn!r}")
-        # print(eqn.to_latex())
-        # print(eqn.to_text())
-        # print(eqn._all_spc)
+        # Single number
+        if isinstance(k_expr0, float):
+
+            def f():
+                return k_expr0
+
+        # Reference to photol reaction
+        elif k_expr0.startswith("j_"):
+            f = _EXP_PHOTOL_FNS[k_expr0[2:]]
+
+        # Reference to longer expression defined in the mech
+        elif k_expr0.startswith("k"):
+            f = _gen_k_fn_yml_multiline(data["k_expressions"][k_expr0])
+
+        # Single-line expression
+        else:
+            f = _gen_k_fn_yml(k_expr0)
+
+        # Form equation
+        eqn = Eqn(ms_rcts, ms_pdts, k0)
 
         eqns.append(eqn)
 
