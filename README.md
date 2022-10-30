@@ -2,6 +2,8 @@
 
 *Simple chemical box model and mechanism analysis tools*
 
+[![Project Status: Concept – Minimal or no implementation has been done yet, or the repository is only intended to be a limited example, demo, or proof-of-concept.](https://www.repostatus.org/badges/latest/concept.svg)](https://www.repostatus.org/#concept)
+
 ![Species' connections in a simple mechanism visualized using Graphviz](https://user-images.githubusercontent.com/15079414/122259946-b4e61980-cea0-11eb-8672-72c99f372b8f.png)
 
 
